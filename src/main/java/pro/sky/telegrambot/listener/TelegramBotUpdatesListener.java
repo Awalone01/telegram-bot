@@ -7,6 +7,7 @@ import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import pro.sky.telegrambot.model.Notification;
 import pro.sky.telegrambot.service.NotificationService;
@@ -21,7 +22,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     private final Logger logger = LoggerFactory.getLogger(TelegramBotUpdatesListener.class);
 
     private static final String START_CMD = "/start";
-    private static final String WELCOME = "Привет, я робот";
+    private static final String WELCOME = "Привет, я бот, который напомнит тебе о важных моментах. Введи запрос формата: ДД.ММ.ГГГГ ЧЧ:ММ Твоя хотелка, и я постараюсь не забыть.";
     private static final String NOT_CMD_TEXT = "Я не знаю что ответить на это";
     private static final String SAVE_NOTIFICATION = "Записал, и напомню Вам вовремя.";
 
@@ -39,7 +40,14 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         telegramBot.setUpdatesListener(this);
     }
 
-    TelegramBot bot = new TelegramBot("BOT_TOKEN");
+    @Scheduled(cron = "0 0/1 * * * *")
+    public void sendNotification() {
+        notificationService.sendNotification(this::sendMsg);
+    }
+
+    private void sendMsg(Notification notification) {
+        sendMsg(notification.getChat_id(), notification.getNotification_text());
+    }
 
     @Override
     public int process(List<Update> updates) {
@@ -51,7 +59,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
             } else {
                 Optional<Notification> anotherData = notificationService.parse(message.text());
                 if (anotherData.isPresent()) {
-                    scheduleNotification(extractChatId(message), anotherData.get());
+                    scheduleNotification(getChatId(message), anotherData.get());
                 } else {
                     sendMsg(getChatId(message), NOT_CMD_TEXT);
                 }
@@ -60,9 +68,9 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }
 
-    private void scheduleNotification (Long chatId, String s) {
+    private void scheduleNotification (Long chatId, Notification notification) {
+        notificationService.schedule(chatId, notification);
         sendMsg(chatId, SAVE_NOTIFICATION);
-
     }
 
     private Long getChatId(Message message) {
