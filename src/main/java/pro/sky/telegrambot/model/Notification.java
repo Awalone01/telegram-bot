@@ -18,15 +18,12 @@ public class Notification {
     private String notification_text;
     private LocalDateTime notification_date;
 
-    public Notification(Long id, Long chat_id, String notification_text, LocalDateTime notification_date) {
-        this.id = id;
-        this.chat_id = chat_id;
+    public Notification(String notification_text, LocalDateTime notification_date) {
         this.notification_text = notification_text;
         this.notification_date = notification_date;
     }
 
     public Notification() {
-
     }
 
     public Long getId() {

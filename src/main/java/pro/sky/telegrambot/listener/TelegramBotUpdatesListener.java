@@ -8,11 +8,12 @@ import com.pengrad.telegrambot.request.SendMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import pro.sky.telegrambot.model.Notification;
 import pro.sky.telegrambot.service.NotificationService;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
-
+import java.util.Optional;
 
 @Service
 public class TelegramBotUpdatesListener implements UpdatesListener {
@@ -22,8 +23,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     private static final String START_CMD = "/start";
     private static final String WELCOME = "Привет, я робот";
     private static final String NOT_CMD_TEXT = "Я не знаю что ответить на это";
-
-
+    private static final String SAVE_NOTIFICATION = "Записал, и напомню Вам вовремя.";
 
     private final TelegramBot telegramBot;
 
@@ -48,11 +48,21 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
             Message message = update.message();
             if (message.text().startsWith(START_CMD)) {
                 sendMsg(getChatId(message), WELCOME);
-            }else{
+            } else {
+                Optional<Notification> anotherData = notificationService.parse(message.text());
+                if (anotherData.isPresent()) {
+                    scheduleNotification(extractChatId(message), anotherData.get());
+                } else {
                     sendMsg(getChatId(message), NOT_CMD_TEXT);
+                }
             }
         });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
+    }
+
+    private void scheduleNotification (Long chatId, String s) {
+        sendMsg(chatId, SAVE_NOTIFICATION);
+
     }
 
     private Long getChatId(Message message) {
