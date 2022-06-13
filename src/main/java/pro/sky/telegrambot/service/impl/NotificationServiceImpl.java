@@ -9,11 +9,14 @@ import java.util.regex.Pattern;
 @Service
 public class NotificationServiceImpl implements NotificationService {
 
+    private static final String REGULAR_MESSAGE = "([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)";
+
+
+
     private final NotificationRepository notificationRepository;
 
     public NotificationServiceImpl(NotificationRepository notificationRepository) {
         this.notificationRepository = notificationRepository;
     }
 
-    Pattern pattern =  Pattern.compile("([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)");
 }
