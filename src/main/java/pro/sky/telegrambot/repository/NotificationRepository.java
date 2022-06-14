@@ -8,6 +8,6 @@ import java.util.Collection;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
-    @Query(value = "SELECT * FROM notifications WHERE notification_date <= CURRENT_TIMESTAMP", nativeQuery = true)
+    @Query(value = "SELECT * FROM notification WHERE notification_date = CURRENT_TIMESTAMP", nativeQuery = true)
     Collection<Notification> getNotification();
 }
